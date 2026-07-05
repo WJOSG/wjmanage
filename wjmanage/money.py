@@ -154,55 +154,155 @@ class Money:
         return self * percentage // 100
 
     def __eq__(self, other: Money) -> bool:
+        '''
+        Compares the equality of two monetary values using the '==' operator.
+        Raises a TypeError for incompatible currencies.
+
+        Parameters:
+            other: Money - The RHS of the '==' operator
+
+        Returns:
+            bool - The truth of the equality
+        '''
         if self._currency != other._currency:
             raise TypeError(f"Incompatible currencies: '{self._currency}' and '{other._currency}'")
         return self._value == other._value
 
 
     def __ne__(self, other):
+        '''
+        Compares the inequality two monetary values using the '!=' operator.
+        Raises a TypeError for incompatible currencies.
+
+        Parameters:
+            other: Money - The RHS of the '!=' operator
+
+        Returns:
+            bool - The truth of the inequality
+        '''
         if self._currency != other._currency:
             raise TypeError(f"Incompatible currencies: '{self._currency}' and '{other._currency}'")
         return self._value != other._value
 
     def __gt__(self, other: Money) -> bool:
+        '''
+        Greater than comparison of two monetary values using the '>' operator.
+        Raises a TypeError for incompatible currencies.
+
+        Parameters:
+            other: Money - The RHS of the '>' operator
+
+        Returns:
+            bool - The truth of the comparison
+        '''
         if self._currency != other._currency:
             raise TypeError(f"Incompatible currencies: '{self._currency}' and '{other._currency}'")
         return self._value > other._value
 
     def __lt__(self, other: Money) -> bool:
+        '''
+        Less than comparison of two monetary values using the '<' operator.
+        Raises a TypeError for incompatible currencies.
+
+        Parameters:
+            other: Money - The RHS of the '<' operator
+
+        Returns:
+            bool - The truth of the comparison
+        '''
         if self._currency != other._currency:
             raise TypeError(f"Incompatible currencies: '{self._currency}' and '{other._currency}'")
         return self._value < other._value
 
     def __le__(self, other: Money) -> bool:
+        '''
+        Less or equal comparison of two monetary values using the '<=' operator.
+        Raises a TypeError for incompatible currencies.
+
+        Parameters:
+            other: Money - The RHS of the '<=' operator
+
+        Returns:
+            bool - The truth of the comparison
+        '''
         if self._currency != other._currency:
             raise TypeError(f"Incompatible currencies: '{self._currency}' and '{other._currency}'")
         return self._value <= other._value
 
     def __ge__(self, other: Money) -> bool:
+        '''
+        Greater or equal comparison of two monetary values using the '>=' operator.
+        Raises a TypeError for incompatible currencies.
+
+        Parameters:
+            other: Money - The RHS of the '>=' operator
+
+        Returns:
+            bool - The truth of the comparison
+        '''
         if self._currency != other._currency:
             raise TypeError(f"Incompatible currencies: '{self._currency}' and '{other._currency}'")
         return self._value >= other._value
 
     def __iadd__(self, other: Money) -> Money:
+        '''
+        Addition assignment for monetary value using the '+=' operator.
+        Raises a TypeError for incompatible currencies.
+
+        Parameters:
+            other: Money - The RHS of the '+=' operator
+
+        Returns:
+            Money - The LHS of the '-=' operator
+        '''
         if self._currency != other._currency:
             raise TypeError(f"Incompatible currencies: '{self._currency}' and '{other._currency}'")
         self._value += other._value
         return self
 
     def __isub__(self, other: Money) -> Money:
+        '''
+        Subtraction assignment for monetary value using the '-=' operator.
+        Raises a TypeError for incompatible currencies.
+
+        Parameters:
+            other: Money - The RHS of the '-=' operator
+
+        Returns:
+            Money - The LHS of the '-=' operator
+        '''
         if self._currency != other._currency:
             raise TypeError(f"Incompatible currencies: '{self._currency}' and '{other._currency}'")
         self._value -= other._value
         return self
 
     def __imul__(self, other: int) -> Money:
+        '''
+        Multiplication assignment for monetary value using the '*=' operator.
+        Raises a TypeError for non-integer values.
+
+        Parameters:
+            other: int - The RHS of the '*=' operator
+
+        Returns:
+            Money - The LHS of the '*=' operator
+        '''
         if not isinstance(other, int):
             raise TypeError(f"The value: {other} is not an integer.")
         self._value *= other
         return self
 
     def __ifloordiv__(self, other: int) -> Money:
+        '''
+        Division assignment for monetary value using the '//=' operator.
+        Raises a TypeError for non-integer values.
+
+        Parameters:
+            other: int - The RHS of the '//=' operator
+
+        Returns:
+            Money - The LHS of the '//=' operator
+        '''
         if not isinstance(other, int):
             raise TypeError(f"The value: {other} is not an integer.")
         self._value //= other
@@ -210,5 +310,12 @@ class Money:
 
 
     def __neg__(self) -> Money:
+        '''
+        Negation of the monetary value using the unary '-' operator.
+        Eg. -Money(1234, 'USD') == Money(-1234, 'USD')
+
+        Returns:
+            Money - The negated monetary value
+        '''
         return Money(-self._value, self._currency)
 
