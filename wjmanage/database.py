@@ -60,13 +60,15 @@ class InventoryItem:
         index: int - The ID/index of the item
         name: str - The name of the item
         quantity: str - How many of the item exist
-        unit_price: money.Money - How much one of the item costs
+        unit_price: money.Money - How much one of the item costs if sold
+        unit_value: money.Money - How much one of the item cost when purchased
     '''
 
     index: int
     name: str
     quantity: int
     unit_price: money.Money
+    unit_value: money.Money
 
 @dataclass
 class Transaction:
@@ -104,7 +106,7 @@ class Database:
     '''
     '''
 
-    def __init__(self):
+    def __init__(self) -> None:
         '''
         '''
         pass
