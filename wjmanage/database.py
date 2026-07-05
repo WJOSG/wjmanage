@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-import money
-import date
+import wjmanage.money as money
+import wjmanage.date as date
 
 @dataclass
 class Permissions:

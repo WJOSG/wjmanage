@@ -19,7 +19,6 @@ class Date:
 
         Returns:
             None
-
         '''
 
         if month not in range(1, 13):
