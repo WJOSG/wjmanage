@@ -118,10 +118,18 @@ def _sql_sanitize(text: str) -> None:
 
 class DatabaseConnection:
     '''
+    The central class for managing the database; essentially a wrapper around sqlite3.
+    Connections are closed when the object is deleted, or can be closed manually.
     '''
 
     def __init__(self, filename: str) -> None:
         '''
+        Initialize a connection to the main database.
+
+        Parameters:
+            filename: str - The path to the database file
+        Returns:
+            None
         '''
         self._con = sqlite3.connect(filename)
         self._cur = self._con.cursor()
@@ -129,6 +137,10 @@ class DatabaseConnection:
 
     def _init_tables(self) -> None:
         '''
+        Initialize empty sqlite tables if none exist
+
+        Returns:
+            None
         '''
 
         table_defs = {
@@ -143,8 +155,54 @@ class DatabaseConnection:
             )
         self._con.commit()
 
+    def _table_insert(self, table_name: str, values: list) -> None:
+        '''
+        Inserts a list of values into an sqlite3 table of a given name
+        The table must already exist.
+
+        Parameters:
+            table_name: str - The table to insert into
+            values: list - A list of values that correspond to the table's columns
+        Returns:
+            None
+        '''
+
+        self._cur.execute(
+            f"INSERT INTO {table_name} VALUES({', '.join([str(i) for i in values])})"
+        )
+        self._con.commit()
+
+    def add_transaction(self, transaction: Transaction) -> bool:
+        '''
+        Adds a new transaction into the database.
+        Will do nothing and return True if a transaction with the same ID already exists.
+
+        Parameters:
+            transaction: Transaction - the transaction to add
+        Returns:
+            bool - True of the transaction already exists with the same ID otherwise False
+        '''
+
+        self._table_insert("transactions",[
+            transaction.index,
+            transaction.account.index,
+            0 if (transaction.item is None) else transaction.item.index,
+            transaction.quantity,
+            transaction.description,
+            transaction.amount.get_value_cents(),
+            transaction.date.year,
+            transaction.date.month,
+            transaction.date.day
+        ])
+        return False
+
     def close(self) -> None:
         '''
+        Manually close the connection to the database.
+        Nothing happens if it is already closed.
+
+        Returns:
+            None
         '''
 
         if self._con is not None:
@@ -153,6 +211,11 @@ class DatabaseConnection:
 
     def __del__(self) -> None:
         '''
+        Automatically close the connection to the database.
+        Nothing happens if it is already closed.
+
+        Returns:
+            None
         '''
 
         self.close()
