@@ -172,6 +172,46 @@ class DatabaseConnection:
         )
         self._con.commit()
 
+    def _table_get(self, table_name: str, key: str, value: str):
+        res = self._cur.execute(f"SELECT * FROM {table_name} WHERE {key}={value}")
+        return res.fetchone()
+
+    def _table_getall(self, table_name: str):
+        res = self._cur.execute(f"SELECT * FROM {table_name}")
+        return res.fetchall()
+
+    def _list_to_transaction(self, response_list: list) -> Transaction:
+        account = self.get_account_by_id(response_list[1])
+        return Transaction(
+            response_list[0],
+            account,
+            self.get_item_by_id(response_list[2]),
+            response_list[3],
+            response_list[4],
+            money.Money(response_list[5], account.currency),
+            date.Date(response_list[6], response_list[7], response_list[8])
+        )
+    def _list_to_account(self, response_list: list) -> FinanceAccount:
+        return FinanceAccount(
+            response_list[0],
+            response_list[1],
+            response_list[2],
+            money.Money(response_list[3], response_list[2])
+        )
+
+    def get_account_by_id(self, index: int) -> FinanceAccount|None:
+        response = self._table_get("accounts", "id", index)
+        if not response:
+            return None
+        return self._list_to_account(response)
+
+    def get_transaction_by_id(self, index: int) -> Transaction|None:
+        response = self._table_get("transactions", "id", index)
+        if not response:
+            return None
+        return self._list_to_transaction(response)
+
+
     def add_transaction(self, transaction: Transaction) -> bool:
         '''
         Adds a new transaction into the database.
