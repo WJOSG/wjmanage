@@ -173,14 +173,40 @@ class DatabaseConnection:
         self._con.commit()
 
     def _table_get(self, table_name: str, key: str, value: str):
+        '''
+        Gets a single row from a table where the key and value pair match.
+
+        Parameters:
+            table_name: str - The table to search
+            key: str - The column name to search by
+            value: str - The 
+        Returns:
+            list: list of all returned columns, empty if none found
+        '''
         res = self._cur.execute(f"SELECT * FROM {table_name} WHERE {key}={value}")
         return res.fetchone()
 
     def _table_getall(self, table_name: str):
+        '''
+        Gets a list of all rows in a table.
+
+        Parameters:
+            table_name: str - The name of the table
+        Returns:
+            list: a 2D list of all of the table's rows
+        '''
         res = self._cur.execute(f"SELECT * FROM {table_name}")
         return res.fetchall()
 
     def _list_to_transaction(self, response_list: list) -> Transaction:
+        '''
+        Converts a raw database list to a Transaction object.
+
+        Parameters:
+            response_list: list - The list of raw data from the database response
+        Returns:
+            Transaction: The converted transaction object
+        '''
         account = self.get_account_by_id(response_list[1])
         return Transaction(
             response_list[0],
@@ -191,7 +217,16 @@ class DatabaseConnection:
             money.Money(response_list[5], account.currency),
             date.Date(response_list[6], response_list[7], response_list[8])
         )
+
     def _list_to_account(self, response_list: list) -> FinanceAccount:
+        '''
+        Converts a raw database list to a FinanceAccount object.
+
+        Parameters:
+            response_list: list - The list of raw data from the database response
+        Returns:
+            FinanceAccount: The converted account object
+        '''
         return FinanceAccount(
             response_list[0],
             response_list[1],
@@ -199,42 +234,66 @@ class DatabaseConnection:
             money.Money(response_list[3], response_list[2])
         )
 
+    def _list_to_item(self, response_list: list) -> InventoryItem:
+        '''
+        Converts a raw database list to a FinanceAccount object.
+
+        Parameters:
+            response_list: list - The list of raw data from the database response
+        Returns:
+            FinanceAccount: The converted account object
+        '''
+        return InventoryItem(
+            response_list[0],
+            response_list[1],
+            response_list[2],
+            money.Money(response_list[3],response_list[4])
+        )
+
     def get_account_by_id(self, index: int) -> FinanceAccount|None:
-        response = self._table_get("accounts", "id", index)
+        '''
+        Retrieve a FinanceAccount by index from the database.
+        Returns None if no such account exists.
+
+        Parameters:
+            index: int - The index of the account
+        Returns:
+            FinanceAccount|None: The account or None if account of given index does not exist
+        '''
+        response = self._table_get("accounts", "id", f"{index}")
         if not response:
             return None
         return self._list_to_account(response)
 
+    def get_item_by_id(self, index: int) -> InventoryItem|None:
+        '''
+        Retrieve an InventoryItem by index from the database.
+        Returns None if no such item exists.
+
+        Parameters:
+            index: int - The index of the item
+        Returns:
+            InventoryItem|None: The item or None if item of given index does not exist
+        '''
+        response = self._table_get("inventory", "id", f"{index}")
+        if not response:
+            return None
+        return self._list_to_item(response)
+
     def get_transaction_by_id(self, index: int) -> Transaction|None:
-        response = self._table_get("transactions", "id", index)
+        '''
+        Retrieve a Transaction by index from the database.
+        Returns None if no such transaction exists.
+
+        Parameters:
+            index: int - The index of the transaction
+        Returns:
+            Transaction|None: The transaction or None if transaction of given index does not exist
+        '''
+        response = self._table_get("transactions", "id", f"{index}")
         if not response:
             return None
         return self._list_to_transaction(response)
-
-
-    def add_transaction(self, transaction: Transaction) -> bool:
-        '''
-        Adds a new transaction into the database.
-        Will do nothing and return True if a transaction with the same ID already exists.
-
-        Parameters:
-            transaction: Transaction - the transaction to add
-        Returns:
-            bool - True of the transaction already exists with the same ID otherwise False
-        '''
-
-        self._table_insert("transactions",[
-            transaction.index,
-            transaction.account.index,
-            0 if (transaction.item is None) else transaction.item.index,
-            transaction.quantity,
-            transaction.description,
-            transaction.amount.get_value_cents(),
-            transaction.date.year,
-            transaction.date.month,
-            transaction.date.day
-        ])
-        return False
 
     def close(self) -> None:
         '''
