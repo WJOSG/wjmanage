@@ -10,8 +10,8 @@ class Money:
         or a subclass of `int`. The currency is automatically capitalized.
 
         Parameters:
-            value_cents: int - The amount of money in cents (eg. $12.34 -> 1234 cents)
-            currency: str - A string representing the type of currency (USD, GBP, PLN, ...)
+            value_cents (int): The amount of money in cents (eg. $12.34 -> 1234 cents)
+            currency (str): A string representing the type of currency (USD, GBP, PLN, ...)
 
         Returns:
             None
@@ -27,7 +27,7 @@ class Money:
         Get the value of money in cents
 
         Returns:
-            int - The value in cents
+            int: The value in cents
         '''
         return self._value
 
@@ -36,7 +36,7 @@ class Money:
         Get the money's currency
 
         Returns:
-            str - The currency
+            str: The currency
         '''
         return self._currency
 
@@ -46,7 +46,7 @@ class Money:
         Raises a TypeError if the value is not an `int` or a subclass of `int`.
 
         Parameters:
-            value_cents: int - The value of the money in cents
+            value_cents (int): The value of the money in cents
 
         Returns:
             None
@@ -60,7 +60,7 @@ class Money:
         Set the money's currency.
 
         Parameters:
-            currency: str - The currency to set, is automatically capitalized
+            currency (str): The currency to set, is automatically capitalized
 
         Returns:
             None
@@ -72,7 +72,7 @@ class Money:
         Represents the amount of money as a string
 
         Returns:
-            str - String representation of the value
+            str: String representation of the value
         '''
 
         return f"{self._value // 100}.{(self._value % 100):02} ({self._currency})"
@@ -83,10 +83,10 @@ class Money:
         Raises a TypeError for incompatible currencies
 
         Parameters:
-            other: Money - The RHS of the '+' operator
+            other (Money): The RHS of the '+' operator
 
         Returns:
-            Money - The sum of the two values
+            Money: The sum of the two values
         '''
 
         if self._currency != other._currency:
@@ -100,10 +100,10 @@ class Money:
         Raises a TypeError for incompatible currencies
 
         Parameters:
-            other: Money - The RHS of the '-' operator
+            other (Money): The RHS of the '-' operator
 
         Returns:
-            Money - The sum of the two values
+            Money: The sum of the two values
         '''
 
         if self._currency != other._currency:
@@ -116,10 +116,10 @@ class Money:
         Multiplies the value of money by an integer scalar using the '*' operator.
 
         Parameters:
-            other: int - The RHS of the '*' operator
+            other (int): The RHS of the '*' operator
 
         Returns:
-            Money - The product of the two values
+            Money: The product of the two values
         '''
 
         return Money(self._value * other, self._currency)
@@ -130,10 +130,10 @@ class Money:
         This is an integer division internally, so is truncated by the cent.
 
         Parameters:
-            other: int - The RHS of the '//' operator
+            other (int): The RHS of the '//' operator
 
         Returns:
-            Money - The quotient of the division
+            Money: The quotient of the division
 
         '''
 
@@ -145,10 +145,10 @@ class Money:
         Calculates the value of an integer percentage of the money, truncated by the cent.
 
         Parameters:
-            percentage: int - The percantage to calculate
+            percentage (int): The percantage to calculate
 
         Returns:
-            Money - The result of the percentage calculation
+            Money: The result of the percentage calculation
         '''
 
         return self * percentage // 100
@@ -159,10 +159,10 @@ class Money:
         Raises a TypeError for incompatible currencies.
 
         Parameters:
-            other: Money - The RHS of the '==' operator
+            other (Money): The RHS of the '==' operator
 
         Returns:
-            bool - The truth of the equality
+            bool: The truth of the equality
         '''
         if self._currency != other._currency:
             raise TypeError(f"Incompatible currencies: '{self._currency}' and '{other._currency}'")
@@ -175,10 +175,10 @@ class Money:
         Raises a TypeError for incompatible currencies.
 
         Parameters:
-            other: Money - The RHS of the '!=' operator
+            other (Money): The RHS of the '!=' operator
 
         Returns:
-            bool - The truth of the inequality
+            bool: The truth of the inequality
         '''
         if self._currency != other._currency:
             raise TypeError(f"Incompatible currencies: '{self._currency}' and '{other._currency}'")
@@ -190,10 +190,10 @@ class Money:
         Raises a TypeError for incompatible currencies.
 
         Parameters:
-            other: Money - The RHS of the '>' operator
+            other (Money): The RHS of the '>' operator
 
         Returns:
-            bool - The truth of the comparison
+            bool: The truth of the comparison
         '''
         if self._currency != other._currency:
             raise TypeError(f"Incompatible currencies: '{self._currency}' and '{other._currency}'")
@@ -205,10 +205,10 @@ class Money:
         Raises a TypeError for incompatible currencies.
 
         Parameters:
-            other: Money - The RHS of the '<' operator
+            other (Money): The RHS of the '<' operator
 
         Returns:
-            bool - The truth of the comparison
+            bool: The truth of the comparison
         '''
         if self._currency != other._currency:
             raise TypeError(f"Incompatible currencies: '{self._currency}' and '{other._currency}'")
@@ -220,10 +220,10 @@ class Money:
         Raises a TypeError for incompatible currencies.
 
         Parameters:
-            other: Money - The RHS of the '<=' operator
+            other (Money): The RHS of the '<=' operator
 
         Returns:
-            bool - The truth of the comparison
+            bool: The truth of the comparison
         '''
         if self._currency != other._currency:
             raise TypeError(f"Incompatible currencies: '{self._currency}' and '{other._currency}'")
@@ -235,10 +235,10 @@ class Money:
         Raises a TypeError for incompatible currencies.
 
         Parameters:
-            other: Money - The RHS of the '>=' operator
+            other (Money): The RHS of the '>=' operator
 
         Returns:
-            bool - The truth of the comparison
+            bool: The truth of the comparison
         '''
         if self._currency != other._currency:
             raise TypeError(f"Incompatible currencies: '{self._currency}' and '{other._currency}'")
@@ -250,10 +250,10 @@ class Money:
         Raises a TypeError for incompatible currencies.
 
         Parameters:
-            other: Money - The RHS of the '+=' operator
+            other (Money): The RHS of the '+=' operator
 
         Returns:
-            Money - The LHS of the '-=' operator
+            Money: The LHS of the '-=' operator
         '''
         if self._currency != other._currency:
             raise TypeError(f"Incompatible currencies: '{self._currency}' and '{other._currency}'")
@@ -266,10 +266,10 @@ class Money:
         Raises a TypeError for incompatible currencies.
 
         Parameters:
-            other: Money - The RHS of the '-=' operator
+            other (Money): The RHS of the '-=' operator
 
         Returns:
-            Money - The LHS of the '-=' operator
+            Money: The LHS of the '-=' operator
         '''
         if self._currency != other._currency:
             raise TypeError(f"Incompatible currencies: '{self._currency}' and '{other._currency}'")
@@ -282,10 +282,10 @@ class Money:
         Raises a TypeError for non-integer values.
 
         Parameters:
-            other: int - The RHS of the '*=' operator
+            other (int): The RHS of the '*=' operator
 
         Returns:
-            Money - The LHS of the '*=' operator
+            Money: The LHS of the '*=' operator
         '''
         if not isinstance(other, int):
             raise TypeError(f"The value: {other} is not an integer.")
@@ -298,10 +298,10 @@ class Money:
         Raises a TypeError for non-integer values.
 
         Parameters:
-            other: int - The RHS of the '//=' operator
+            other (int): The RHS of the '//=' operator
 
         Returns:
-            Money - The LHS of the '//=' operator
+            Money: The LHS of the '//=' operator
         '''
         if not isinstance(other, int):
             raise TypeError(f"The value: {other} is not an integer.")
@@ -315,7 +315,7 @@ class Money:
         Eg. -Money(1234, 'USD') == Money(-1234, 'USD')
 
         Returns:
-            Money - The negated monetary value
+            Money: The negated monetary value
         '''
         return Money(-self._value, self._currency)
 

@@ -3,9 +3,9 @@ class Date:
     A simple class for storing a date in the database
 
     Parameters:
-        year: int - The year
-        month: int - The month in the range [1,12]
-        day: int - The day in the range [1,31]
+        year (int): The year
+        month (int): The month in the range [1,12]
+        day (int): The day in the range [1,31]
     '''
 
     def __init__(self, year: int, month: int, day: int) -> None:
@@ -13,9 +13,9 @@ class Date:
         Initialize a Date object. Raises a ValueError for improper date.
 
         Parameters:
-            year: int - The year
-            month: int - The month, must be in the range [1,12]
-            day: int - The day, must be in the range [1,31]
+            year (int): The year
+            month (int): The month, must be in the range [1,12]
+            day (int): The day, must be in the range [1,31]
 
         Returns:
             None
@@ -37,7 +37,7 @@ class Date:
         "YYYY.MM.DD"
 
         Returns:
-            str - The date encoded in "YYYY.MM.DD"
+            str: The date encoded in "YYYY.MM.DD"
         '''
 
         return f"{self.year:04}.{self.month:02}.{self.day:02}"

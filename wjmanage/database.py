@@ -12,11 +12,11 @@ class Permissions:
     users are permitted to do
 
     Parameters:
-        create_transactions: bool - Can the user create new transactions
-        delete_transactions: bool - Can the user delete/modify transactions
-        create_inventory: bool - Can the user create/modify inventory items
-        delete_inventory: bool - Can the user delete inventory items
-        manage_employees: bool - Can the user create/modify/delete employees
+        create_transactions (bool): Can the user create new transactions
+        delete_transactions (bool): Can the user delete/modify transactions
+        create_inventory (bool): Can the user create/modify inventory items
+        delete_inventory (bool): Can the user delete inventory items
+        manage_employees (bool): Can the user create/modify/delete employees
     '''
 
     create_transactions: bool
@@ -31,15 +31,15 @@ class Employee:
     An employee/user that is stored in the database
 
     Parameters:
-        index: int - The ID/index of the employee in the database
-        username: str - The login username of the employee
-        name: str - The full name of the employee
-        email: str - The employee's email address
-        position: str - The employee's position eg. manager, sales, ...
-        salt: str - A random string appended to the password when hashing
-        password_hash: str - The hash of the user's password appended with the salt
-        permissions: Permissions - A set of permissions for the employee
-        start_date: date.Date - The date at which the employee started at the firm
+        index (int): The ID/index of the employee in the database
+        username (str): The login username of the employee
+        name (str): The full name of the employee
+        email (str): The employee's email address
+        position (str): The employee's position eg. manager, sales, ...
+        salt (str): A random string appended to the password when hashing
+        password_hash (str): The hash of the user's password appended with the salt
+        permissions (Permissions): A set of permissions for the employee
+        start_date (date.Date): The date at which the employee started at the firm
     '''
 
     index: int
@@ -60,10 +60,10 @@ class InventoryItem:
     An item in the inventory database
 
     Parameters:
-        index: int - The ID/index of the item
-        name: str - The name of the item
-        quantity: str - How many of the item exist
-        unit_value: money.Money - How much one of the item cost when purchased
+        index (int): The ID/index of the item
+        name (str): The name of the item
+        quantity (str): How many of the item exist
+        unit_value (money.Money): How much one of the item cost when purchased
     '''
 
     index: int
@@ -78,10 +78,10 @@ class FinanceAccount:
     An account to perform transactions on
 
     Parameters:
-        index: int - The ID/index of the account
-        name: str - The name of the account
-        currency: str - The currency of all the account's transactions
-        balance: money.Money - The current calculated balance of the account
+        index (int): The ID/index of the account
+        name (str): The name of the account
+        currency (str): The currency of all the account's transactions
+        balance (money.Money): The current calculated balance of the account
     '''
 
     index: int
@@ -95,13 +95,13 @@ class Transaction:
     A financial transaction
 
     Parameters:
-        index: int - The ID/index of the transaction
-        account: FinanceAccount - The account that the transaction took place in
-        item: InventoryItem|None - The item that this transaction affects
-        quantity: int - The quantity that the transaction contributes to the inventory
-        description: str - The description of the transaction
-        amount: money.Money - The amount of the transaction
-        data: date.Date - The date that the transaction took place
+        index (int): The ID/index of the transaction
+        account (FinanceAccount): The account that the transaction took place in
+        item (InventoryItem|None): The item that this transaction affects
+        quantity (int): The quantity that the transaction contributes to the inventory
+        description (str): The description of the transaction
+        amount (money.Money): The amount of the transaction
+        data (date.Date): The date that the transaction took place
     '''
 
     index: int
@@ -112,7 +112,7 @@ class Transaction:
     amount: money.Money
     date: date.Date
 
-def _sql_sanitize(text: str) -> None:
+def _sql_sanitize(text: str)  None:
     return text.replace("'", "''")
 
 
@@ -127,7 +127,7 @@ class DatabaseConnection:
         Initialize a connection to the main database.
 
         Parameters:
-            filename: str - The path to the database file
+            filename (str): The path to the database file
         Returns:
             None
         '''
@@ -155,14 +155,15 @@ class DatabaseConnection:
             )
         self._con.commit()
 
+
     def _table_insert(self, table_name: str, values: list) -> None:
         '''
         Inserts a list of values into an sqlite3 table of a given name
         The table must already exist.
 
         Parameters:
-            table_name: str - The table to insert into
-            values: list - A list of values that correspond to the table's columns
+            table_name (str): The table to insert into
+            values (list): A list of values that correspond to the table's columns
         Returns:
             None
         '''
@@ -177,9 +178,9 @@ class DatabaseConnection:
         Gets a single row from a table where the key and value pair match.
 
         Parameters:
-            table_name: str - The table to search
-            key: str - The column name to search by
-            value: str - The 
+            table_name (str): The table to search
+            key (str): The column name to search by
+            value (str): The value to compare
         Returns:
             list: list of all returned columns, empty if none found
         '''
@@ -191,7 +192,7 @@ class DatabaseConnection:
         Gets a list of all rows in a table.
 
         Parameters:
-            table_name: str - The name of the table
+            table_name (str): The name of the table
         Returns:
             list: a 2D list of all of the table's rows
         '''
@@ -203,7 +204,7 @@ class DatabaseConnection:
         Converts a raw database list to a Transaction object.
 
         Parameters:
-            response_list: list - The list of raw data from the database response
+            response_list (list): The list of raw data from the database response
         Returns:
             Transaction: The converted transaction object
         '''
@@ -218,12 +219,37 @@ class DatabaseConnection:
             date.Date(response_list[6], response_list[7], response_list[8])
         )
 
+    def _transaction_to_list(self, transaction: Transaction) -> list:
+        '''
+        Converts a Transaction object into a list of raw data for the database.
+
+        Parameters:
+            transaction (Transaction): The transaction to convert
+        Returns:
+            list - The list of raw values
+        '''
+        return [transaction.index, transaction.account.index, transaction.item.index,
+                transaction.quantity, f"'{transaction.description}'", 
+                transaction.amount.get_value_cents(), transaction.date.year, 
+                transaction.date.month, transaction.date.day]
+
+    def _account_to_list(self, account: FinanceAccount) -> list:
+        '''
+        Converts a FinanceAccount object into a list of raw data for the database.
+
+        Parameters:
+            account (FinanceAccount): The transaction to convert
+        Returns:
+            list - The list of raw values
+        '''
+        return [account.index, f"'{account.name}'", f"'{account.currency}'", account.balance.get_value_cents()]
+
     def _list_to_account(self, response_list: list) -> FinanceAccount:
         '''
         Converts a raw database list to a FinanceAccount object.
 
         Parameters:
-            response_list: list - The list of raw data from the database response
+            response_list (list): The list of raw data from the database response
         Returns:
             FinanceAccount: The converted account object
         '''
@@ -239,7 +265,7 @@ class DatabaseConnection:
         Converts a raw database list to a FinanceAccount object.
 
         Parameters:
-            response_list: list - The list of raw data from the database response
+            response_list (list): The list of raw data from the database response
         Returns:
             FinanceAccount: The converted account object
         '''
@@ -256,7 +282,7 @@ class DatabaseConnection:
         Returns None if no such account exists.
 
         Parameters:
-            index: int - The index of the account
+            index (int): The index of the account
         Returns:
             FinanceAccount|None: The account or None if account of given index does not exist
         '''
@@ -271,7 +297,7 @@ class DatabaseConnection:
         Returns None if no such item exists.
 
         Parameters:
-            index: int - The index of the item
+            index (int): The index of the item
         Returns:
             InventoryItem|None: The item or None if item of given index does not exist
         '''
@@ -286,7 +312,7 @@ class DatabaseConnection:
         Returns None if no such transaction exists.
 
         Parameters:
-            index: int - The index of the transaction
+            index (int): The index of the transaction
         Returns:
             Transaction|None: The transaction or None if transaction of given index does not exist
         '''
