@@ -152,6 +152,37 @@ class DatabaseConnection:
 
         self.close()
 
+    def create_transaction(self, account: FinanceAccount,
+                           category: str, item: InventoryItem|None,
+                           quantity: int, description: str, amount: money.Money,
+                           date: date.Date):
+        '''
+        Creates a new transaction with random ID and adds it to the database.
+
+        Parameters:
+            account (FinanceAccount): The account which the transaction belongs to
+            category (str): The transaction's category
+            item (InventoryItem|None): The item that the transaction affects
+            quantity (int): The quantity that the transaction contributes to the inventory
+            description (str): The description of the transaction
+            amount (money.Money): The amount of the transaction
+            date (date.Date): The date that the transaction took place
+        Returns:
+            None
+        '''
+        transaction = Transaction(
+            index = random.randint(999_999_999),
+            account = account,
+            category = category,
+            item = item,
+            quantity = quantity,
+            description = description,
+            amount = amount,
+            date = date
+        )
+        self._table_insert(self._transaction_to_list(transaction))
+
+
     def get_all_items(self) -> list[InventoryItem]:
         '''
         Gets a list of all InventoryItem objecst in the database
@@ -313,14 +344,14 @@ class DatabaseConnection:
         '''
         account = self.get_account_by_id(response_list[1])
         return Transaction(
-            response_list[0],
-            account,
-            response_list[2],
-            self.get_item_by_id(response_list[3]),
-            response_list[4],
-            response_list[5],
-            money.Money(response_list[6], account.currency),
-            date.Date(response_list[7], response_list[8], response_list[9])
+            index = response_list[0],
+            account = account,
+            category = response_list[2],
+            item = self.get_item_by_id(response_list[3]),
+            quantity = response_list[4],
+            description = response_list[5],
+            amount = money.Money(response_list[6], account.currency),
+            date = date.Date(response_list[7], response_list[8], response_list[9])
         )
 
     def _transaction_to_list(self, transaction: Transaction) -> list:
@@ -381,11 +412,11 @@ class DatabaseConnection:
             FinanceAccount: The converted account object
         '''
         return FinanceAccount(
-            response_list[0],
-            response_list[1],
-            response_list[2],
-            response_list[3],
-            money.Money(response_list[4], response_list[3])
+            index = response_list[0],
+            name = response_list[1],
+            category = response_list[2],
+            currency = response_list[3],
+            balance = money.Money(response_list[4], response_list[3])
         )
 
     def _list_to_item(self, response_list: list) -> InventoryItem:
@@ -398,10 +429,10 @@ class DatabaseConnection:
             FinanceAccount: The converted account object
         '''
         return InventoryItem(
-            response_list[0],
-            response_list[1],
-            response_list[2],
-            response_list[3],
-            money.Money(response_list[5],response_list[4])
+            index = response_list[0],
+            name = response_list[1],
+            category = response_list[2],
+            quantity = response_list[3],
+            unit_value = money.Money(response_list[5],response_list[4])
         )
 
