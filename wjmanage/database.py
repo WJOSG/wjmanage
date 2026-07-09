@@ -152,6 +152,26 @@ class DatabaseConnection:
 
         self.close()
 
+    def create_account(self, name: str, category: str, currency: str,
+                       balance: money.Money):
+        '''
+        Creates a new account with a random ID and adds it to the database.
+
+        Parameters:
+            name (str): The name of the account
+            category (str): The account's category
+            currency (str): The currency of all the accounts transactions
+            balance (money.Money): The current calculated balance of the account
+        '''
+        account = FinanceAccount(
+            index = random.randint(999_999_999),
+            name = name,
+            category = category,
+            currency = currency,
+            balance = balance
+        )
+        self._table_insert("accounts", self._account_to_list(account))
+
     def create_transaction(self, account: FinanceAccount,
                            category: str, item: InventoryItem|None,
                            quantity: int, description: str, amount: money.Money,
@@ -180,7 +200,7 @@ class DatabaseConnection:
             amount = amount,
             date = date
         )
-        self._table_insert(self._transaction_to_list(transaction))
+        self._table_insert("transactions", self._transaction_to_list(transaction))
 
 
     def get_all_items(self) -> list[InventoryItem]:
