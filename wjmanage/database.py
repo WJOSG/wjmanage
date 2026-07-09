@@ -153,7 +153,7 @@ class DatabaseConnection:
         self.close()
 
     def create_account(self, name: str, category: str, currency: str,
-                       balance: money.Money):
+                       balance: money.Money) -> None:
         '''
         Creates a new account with a random ID and adds it to the database.
 
@@ -162,6 +162,8 @@ class DatabaseConnection:
             category (str): The account's category
             currency (str): The currency of all the accounts transactions
             balance (money.Money): The current calculated balance of the account
+        Returns:
+            None
         '''
         account = FinanceAccount(
             index = random.randint(999_999_999),
@@ -172,10 +174,32 @@ class DatabaseConnection:
         )
         self._table_insert("accounts", self._account_to_list(account))
 
+    def create_item(self, name: str, category: str, 
+                    quantity: int, unit_value: money.Money) -> None:
+        '''
+        Creates a new inventory item and adds it to the database.
+
+        Parameters:
+            name (str): The name of the item
+            category (str): The item's category
+            quantity (str): How many of the item exist
+            unit_value (money.Money): How much one of the item cost when purchased
+        Returns:
+            None
+        '''
+        item = InventoryItem(
+            index = random.randint(999_999_999),
+            name = name,
+            category = category,
+            quantity = quantity,
+            unit_value = unit_value
+        )
+        self._table_insert("inventory", self._item_to_list(item))
+
     def create_transaction(self, account: FinanceAccount,
                            category: str, item: InventoryItem|None,
                            quantity: int, description: str, amount: money.Money,
-                           date: date.Date):
+                           date: date.Date) -> None:
         '''
         Creates a new transaction with random ID and adds it to the database.
 
