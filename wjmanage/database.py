@@ -3,6 +3,8 @@ import wjmanage.money as money
 import wjmanage.date as date
 import sqlite3
 import random
+import secrets
+import hashlib
 
 
 @dataclass
@@ -40,6 +42,8 @@ class Employee:
         password_hash (str): The hash of the user's password appended with the salt
         permissions (Permissions): A set of permissions for the employee
         start_date (date.Date): The date at which the employee started at the firm
+        auth (str): The employee's authentication token
+        expires (int): Unix time for when the user's authentication expires
     '''
 
     index: int
@@ -51,6 +55,8 @@ class Employee:
     password_hash: str
     permissions: Permissions
     start_date: date.Date
+    auth: str
+    expires: int
 
 
 
@@ -152,6 +158,42 @@ class DatabaseConnection:
 
         self.close()
 
+    def create_employee(self, username: str, name: str, email: str, position: str,
+                        password: str, permissions: Permissions, start_date: date.Date) -> None:
+        '''
+        Creates a new employee with a random ID, and creates a unique password hash and salt
+        for the login account.
+
+        Parameters:
+            username (str): The employee's login username
+            name (str): The employee's name
+            email (str): The employee's email, does not check for validity
+            position (str): The employee's job position
+            password (str): The employee's login password
+            permissions (Permissions): The employee's database access permissions
+            start_date (date.Date): The date at which the employee started
+
+        Returns:
+            None
+
+        '''
+        salt = secrets.token_hex(32)
+        password_hash = hashlib.sha256((salt + password + salt).encode()).hexdigest()
+        employee = Employee(
+            index = random.randint(999_999_999),
+            username = username,
+            name = name,
+            email = email,
+            position = position,
+            salt = salt,
+            password_hash = password_hash,
+            permissions = permissions,
+            start_date = start_date,
+            auth = "",
+            expires = 0
+        )
+        self._table_insert("employees", self._employee_to_list(account))
+
     def create_account(self, name: str, category: str, currency: str,
                        balance: money.Money) -> None:
         '''
@@ -227,6 +269,15 @@ class DatabaseConnection:
         self._table_insert("transactions", self._transaction_to_list(transaction))
 
 
+    def get_all_employees(self) -> list[Employee]:
+        '''
+        Gets a list of all Employee objects in the database
+
+        Returns:
+            list[Employee]: A list of all employees
+        '''
+        return [self._list_to_employee(employee) for employee in self._table_getall('employees')]
+
     def get_all_items(self) -> list[InventoryItem]:
         '''
         Gets a list of all InventoryItem objecst in the database
@@ -235,7 +286,6 @@ class DatabaseConnection:
             list[InventoryItem]: A list of all inventory items
         '''
         return [self._list_to_item(item) for item in self._table_getall('inventory')]
-
 
     def get_all_transactions(self) -> list[Transacion]:
         '''
@@ -254,6 +304,22 @@ class DatabaseConnection:
             list[FinanceAccount]: A list of all accounts
         '''
         return [self._list_to_account(transaction) for account in self._table_getall('accounts')]
+
+    def get_employee_by_id(self, index: int) -> Employee|None:
+        '''
+        Retrieve an Employee by index from the database.
+        Returns None if no such employee exists.
+
+        Parameters:
+            index (int): The index of the employee
+        Returns:
+            Employee|None: The employee or None if employee of given index does not exist
+        '''
+        response = self._table_get("employees", "id", f"{index}")
+        if not response:
+            return None
+        return self._list_to_employee(response)
+
 
     def get_account_by_id(self, index: int) -> FinanceAccount|None:
         '''
@@ -325,7 +391,7 @@ class DatabaseConnection:
             "transactions": ["id", "account_id", "category", "item_id", "quantity", "description", "amount", "year", "month", "day"],
             "accounts": ["id", "name", "category", "currency", "balance"],
             "inventory": ["id", "name", "category", "quantity", "currency", "unit_value"],
-            "employees": ["id", "username", "name", "email", "position", "salt", "password_hash", "permissions", "year", "month", "day"]
+            "employees": ["id", "username", "name", "email", "position", "salt", "password_hash", "permissions", "year", "month", "day", "auth", "expires"]
         }
         for table_name in table_defs:
             self._cur.execute(
@@ -377,6 +443,59 @@ class DatabaseConnection:
         return res.fetchall()
 
 
+    def _list_to_employee(self, response_list: list) -> Employee:
+        '''
+        Converts a raw database list into an Employee object.
+
+        Parameters:
+            response_list (list): The list of raw data from the database response
+        Returns:
+            Employee: The converted employee object
+        '''
+        return Employee(
+            index = response_list[0],
+            username = response_list[1],
+            name = response_list[2],
+            email = response_list[3],
+            position = response_list[4],
+            salt = response_list[5],
+            password_hash = response_list[6],
+            permissions = Permissions(
+                create_transactions = bool(response_list[7] & 1),
+                delete_transactions = bool(response_list[7] & (1<<1)),
+                create_inventory = bool(response_list[7] & (1<<2)),
+                delete_inventory = bool(response_list[7] & (1<<3)),
+                manage_employees = bool(response_list[7] & (1<<4))
+            ),
+            start_date = date.Date(response_list[8], response_list[9], response_list[10]),
+            auth = response_list[11],
+            expires = response_list[12]
+        )
+
+    def _employee_to_list(self, employee: Employee) -> list:
+        '''
+        Converts an Employee object into a list of raw data for the database.
+
+        Parameters:
+            employee (Employee): The employee to convert
+        Returns:
+            list: The list of raw values
+        '''
+        return [employee.index, f"'{employee.username}'", f"'{employee.name}'",
+                f"'{employee.email}'", f"'{employee.position}'", f"{employee.salt}",
+                f"'{employee.password_hash}'", 
+                (employee.permissions.create_transactions << 0) | \
+                (employee.permissions.delete_transactions << 1) | \
+                (employee.permissions.create_inventory << 2) | \
+                (employee.permissions.delete_inventory << 3) | \
+                (employee.permissions.manage_employees << 4),
+                employee.start_date.year,
+                employee.start_date.month,
+                employee.start_date.day,
+                f"'{employee.auth}'",
+                employee.expires
+                ]
+
     def _list_to_transaction(self, response_list: list) -> Transaction:
         '''
         Converts a raw database list to a Transaction object.
@@ -405,7 +524,7 @@ class DatabaseConnection:
         Parameters:
             transaction (Transaction): The transaction to convert
         Returns:
-            list - The list of raw values
+            list: The list of raw values
         '''
         return [transaction.index, transaction.account.index, f"'{transaction.category}'", 
                 transaction.item.index,
@@ -421,7 +540,7 @@ class DatabaseConnection:
         Parameters:
             account (FinanceAccount): The transaction to convert
         Returns:
-            list - The list of raw values
+            list: The list of raw values
         '''
         return [account.index, f"'{account.name}'", 
                 f"'{account.category}'"
@@ -435,7 +554,7 @@ class DatabaseConnection:
         Parameters:
             item (InventoryItem): The item to convert
         Returns:
-            list - The list of raw values
+            list: The list of raw values
         '''
         return [
             item.index,
