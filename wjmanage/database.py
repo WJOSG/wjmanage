@@ -5,6 +5,9 @@ import sqlite3
 import random
 import secrets
 import hashlib
+import time
+
+SESSION_TIME_SECONDS = 60 * 10
 
 
 @dataclass
@@ -157,6 +160,50 @@ class DatabaseConnection:
         '''
 
         self.close()
+
+    def authenticate_login(self, username: str, password: str) -> Employee|None:
+        '''
+        Authenticates an employee based on username and password login.
+
+        Parameters:
+            username (str): The login username
+            password (str): The login password
+        Returns:
+            Employee|None: The authenticated employee or None if incorrect username or password
+        
+        '''
+        response = self._table_get('employees', 'username', f"'{username}'")
+        if response is None:
+            return None
+        user = self._list_to_employee(response)
+        password_hash = hashlib.sha256((user.salt + password + user.salt).encode()).hexdigest()
+        if password_hash != user.password_hash:
+            return None
+        new_auth = secrets.token_hex(32)
+        new_expires = int(time.time() + SESSION_TIME_SECONDS)
+        self._table_update('employees', 'username', f"'{username}'",
+                           auth=f"'{new_auth}'",
+                           expires=new_expires)
+        response = self._table_get('employees', 'username', f"'{username}'")
+        return self._list_to_employee(response)
+
+    def authenticate_token(self, auth_token: str) -> Employee|None:
+        '''
+        Checks the validity if an authentication token and returns the
+        corresponding employee if valid.
+
+        Parameters:
+            auth_token (str): The authentication token
+        Returns:
+            Employee|None: The corresponding employee or None if the auth token is invalid or expired
+        '''
+        response = self._table_get(self, 'auth', f"'{auth_token}'")
+        if response is None:
+            return None
+        user = self._list_to_employee(response)
+        if time.time() > user.expires:
+            return None
+        return user
 
     def create_employee(self, username: str, name: str, email: str, position: str,
                         password: str, permissions: Permissions, start_date: date.Date) -> None:
@@ -416,7 +463,26 @@ class DatabaseConnection:
         )
         self._con.commit()
 
-    def _table_get(self, table_name: str, key: str, value: str):
+    def _table_update(self, table_name: str, key: str, value: str, **kwargs) -> None:
+        '''
+        Updates the values in a table where the key and value pair match.
+
+        Parameters:
+            table_name (str): The name of the table to update the row in
+            key (str): The search key to determine which row to upadte
+            value (str): The search value corresponding to the key
+            **kwargs: Key-value pairs to determine what values to update
+        '''
+        kvpairs = ""
+        for key in kwargs:
+            kvpairs += f" {key}={kwargs[key]},"
+        self._cur.execute(
+            f"UPDATE {table_name} SET{kvpairs[:-1]} WHERE {key}={value}"
+        )
+        self._con.commit()
+
+
+    def _table_get(self, table_name: str, key: str, value: str) -> list:
         '''
         Gets a single row from a table where the key and value pair match.
 
