@@ -127,7 +127,7 @@ class Transaction:
     amount: money.Money
     date: date.Date
 
-def _sql_sanitize(text: str)  None:
+def _sql_sanitize(text: str) -> None:
     return text.replace("'", "''")
 
 
